@@ -30,6 +30,13 @@ class ShipStationApp < EndpointBase::Sinatra::Base
       end
       @client.save_changes
 
+      # create the customs items
+      customs_items(@shipment[:items], @shipstation_id).each do |resource|
+        @client.AddToCustomsItems(resource)
+      end
+      @client.save_changes
+
+
     rescue => e
       # tell Honeybadger
       log_exception(e)
@@ -184,6 +191,23 @@ class ShipStationApp < EndpointBase::Sinatra::Base
         resource.Options = properties
       end
 
+      item_resources << resource
+    end
+    item_resources
+  end
+
+  def customs_items(line_items, shipstation_id)
+    item_resources = []
+
+    line_items.each do |item|
+      resource = CustomsItem.new
+      resource.CustomsItemID = item[:product_id]
+      resource.OrderID = shipstation_id
+      resource.Quantity = item[:quantity]
+      resource.Value = item[:price].to_s
+      resource.Weight = "6"
+      resource.Description = "Womens clothing"#item[:name]
+      resource.OriginCountryCode = "US"
       item_resources << resource
     end
     item_resources
