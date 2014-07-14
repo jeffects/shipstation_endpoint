@@ -82,10 +82,9 @@ class ShipStationApp < EndpointBase::Sinatra::Base
     begin
       authenticate_shipstation
 
-      # Shipstation doesn't record time information - just date, so round the parameter down
-      since = Time.parse(@config[:since]).utc.beginning_of_day.iso8601
+      since = Time.parse(@config[:since]).iso8601
 
-      @client.Shipments.filter("ModifyDate ge datetime'#{since}' and ShipDate ne null")
+      @client.Shipments.filter("CreateDate ge datetime'#{since}'")
       shipstation_result = @client.execute
 
       # TODO - get shipping carrier, etc.
@@ -98,10 +97,13 @@ class ShipStationApp < EndpointBase::Sinatra::Base
       end
       @kount = shipstation_result.count
 
-      # return current timestamp so parameter updates on hub side
-      # NOTE: shipstation doesn't provide detail beyond date so we need to round it down in order
-      # to not miss any shipments
-      add_parameter 'since', Time.now.utc.beginning_of_day
+      # ShipStation appears to be recording their timestamps in local (PST) time but storing that timestamp
+      # as UTC (so it's basically 7-8 hours off the correct time (depending on daylight savings). To compensate
+      # for this the timestamp we use for "now" should be adjusted accordingly.
+      now = (Time.now + Time.zone_offset("PDT")).utc.iso8601
+
+      # Tell Wombat to use the current time as the 'high watermark' the next time it checks
+      add_parameter 'since', now
     rescue => e
       # tell Honeybadger
       log_exception(e)
