@@ -92,7 +92,8 @@ class ShipStationApp < EndpointBase::Sinatra::Base
         add_object :shipment, {
           id: resource.ShipmentID.to_s,
           tracking: resource.TrackingNumber,
-          order_id: resource.OrderID.to_s
+          order_id: resource.OrderID.to_s,
+          shipping_status: "shipped"
         }
       end
       @kount = shipstation_result.count
