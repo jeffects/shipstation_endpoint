@@ -128,6 +128,13 @@ class ShipStationApp < EndpointBase::Sinatra::Base
       when 'UPS Ground' then 26 #UPS Ground
       when 'UPS Express' then 31 #UPS Next Day Air Saver
       when 'DHL International' then 148 #Express Worldwide
+      # USPS
+      when 'USPS First Class Mail' then 10
+      when 'USPS Priority Mail (Endicia)' then 21 #USPS Priority Mail (Provider = Endicia)
+      when 'International Priority Airmail (Endicia)' then 89 #USPS (Provider = Endicia)
+      # FedEx
+      when 'FedEx SmartPost Parcel Select' then 66
+      when 'FedEx SmartPost Parcel Select Lightweight' then 169
     end
   end
 
@@ -135,6 +142,8 @@ class ShipStationApp < EndpointBase::Sinatra::Base
     carrier_id = case carrier_name
       when "UPS" then 3
       when "DHL" then 13
+      when 'USPS' then 1
+      when 'FedEx' then 4
       else 0
     end
   end
@@ -164,6 +173,9 @@ class ShipStationApp < EndpointBase::Sinatra::Base
     resource.ShipState = order[:shipping_address][:state]
     resource.ShipStreet1 = order[:shipping_address][:address1]
     resource.ShipStreet2 = order[:shipping_address][:address2]
+    resource.CustomField1 = order[:custom_field1]
+    resource.CustomField2 = order[:custom_field2]
+    resource.CustomField3 = order[:custom_field3]
     resource
   end
 
